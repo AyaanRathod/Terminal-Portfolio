@@ -161,15 +161,14 @@ For more information, try:
     projects() {
         term.echo(`
 
-[[;orange;]<a href="https://yourusername.github.io/terminal-portfolio/" target="_blank">🔗 Terminal Portfolio</a>]
+<a href="https://github.com/AyaanRathod/Terminal-Portfolio" target="_blank">[[;orange;]🔗 Terminal Portfolio] [[;white;](Current website your Seeing)] </a>
 A terminal-style portfolio website built with JavaScript 
 that simulates a command-line interface.
 [[;cyan;]Technologies:] JavaScript, HTML, CSS, jQuery Terminal
 
-[[;orange;]<a href="#" target="_blank">🔗 LinkedIn Ad Blocker</a>]
+<a href="#" target="_blank">[[;orange;]🔗 LinkedIn Ad Blocker]</a>
 Developed a lightweight browser extension to block ads on LinkedIn,
 enhancing user privacy and browsing experience.
-[[;cyan;]Technologies:] JavaScript, JSON, Chrome Extensions API
 
 [[;#44D544;]Highlights:]
 • Created essential files (manifest.json, background.js, linkedin.js)
