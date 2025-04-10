@@ -5,7 +5,6 @@ const user = 'guest';
 const server = 'AyaanRathod';
 const font = 'slant';
 
-
 const commandDescriptions = {
     ls: "Lists contents of current directory",
     echo: "Prints text to the terminal",
@@ -13,8 +12,10 @@ const commandDescriptions = {
     github: "Opens my GitHub profile",
     resume: "Opens my resume/CV",
     projects: "Shows my portfolio projects",
+    main: "Redirects to my main portfolio site",
     clear: "Clears the terminal screen"
 };
+
 // Directory data
 const directories = {
     education: [
@@ -60,18 +61,15 @@ function render(text) {
     }));
 }
 
-
-
-
 function ready() {
-   
-   term.echo(() => (render('Ayaan Rathod')))
+    term.echo(() => (render('Ayaan Rathod')))
    .echo('[[;cyan;]\nWelcome to my Interactive Terminal Portfolio!]')
    .echo('')
    .echo('[[;#44D544;]→] Type [[;yellow;]help] to see all available commands')
    .echo('[[;#44D544;]→] Try [[;yellow;]aboutme] to learn about my background')
    .echo('[[;#44D544;]→] Check out [[;yellow;]projects] to see what I\'ve built')
    .echo('[[;#44D544;]→] Use [[;yellow;]cd education] to view my academic courses')
+   .echo('[[;#44D544;]→] Use [[;yellow;]main] to visit my main portfolio site')
    .echo('')
    .echo('[[;white;]Navigate like you would in a real terminal - have fun exploring!]\n')
    .resume();
@@ -89,7 +87,6 @@ const commands = {
         }
         term.echo("\nType any command to execute it.\n");
     },
-    
 
     cd(dir = null) {
         if (dir === null || dir === '~' || dir === '/') {
@@ -111,10 +108,8 @@ const commands = {
         }
     },
 
-
     aboutme() {
         term.echo(`
-
 I'm a 3rd year Computer Science student passionate about:
 • [[;white;]Web Development]
 • [[;white;]Software Engineering]
@@ -129,7 +124,7 @@ For more information, try:
 [[;yellow;]cd education] - to see my courses
     `);
     },
-    
+
     echo(...args) {
         if (args.length > 0) {
             term.echo(args.join(' '));
@@ -139,14 +134,8 @@ For more information, try:
     github() {
         term.echo("Opening GitHub profile...");
         setTimeout(() => {
-            // Replace loading message with success message
-            //term.update(loadingMsg, '[[;#44D544;]✓] Connected to GitHub, redirecting...');
-            
-            // Short additional delay before actually opening the link
-            setTimeout(() => {
-                window.open("https://github.com/AyaanRathod", "_blank");
-            }, 200);
-        }, 150);
+            window.open("https://github.com/AyaanRathod", "_blank");
+        }, 200);
     },
 
     resume() {
@@ -154,17 +143,18 @@ For more information, try:
         setTimeout(() => {
             window.open("https://rxresu.me/ayaanrathod/ayaan-rathod-resume", "_blank");
         }, 300);
-    
-       
     },
 
     projects() {
         term.echo(`
-
-<a href="https://github.com/AyaanRathod/Terminal-Portfolio" target="_blank">[[;orange;]🔗 Terminal Portfolio] [[;white;](Current website your Seeing)] </a>
+<a href="https://github.com/AyaanRathod/Terminal-Portfolio" target="_blank">[[;orange;]🔗 Terminal Portfolio] [[;white;](Current website you're seeing)]</a>
 A terminal-style portfolio website built with JavaScript 
 that simulates a command-line interface.
 [[;cyan;]Technologies:] JavaScript, HTML, CSS, jQuery Terminal
+
+<a href="https://ayaanrathod.github.io/Personal-Portfolio/" target="_blank">[[;orange;]🔗 Main Portfolio]</a>
+My main portfolio website, showcasing my projects and skills.
+[[;cyan;]Technologies:] HTML, CSS, JavaScript
 
 <a href="#" target="_blank">[[;orange;]🔗 LinkedIn Ad Blocker]</a>
 Developed a lightweight browser extension to block ads on LinkedIn,
@@ -179,10 +169,16 @@ More projects coming soon...
                 `);
     },
 
+    main() {
+        term.echo("Redirecting to the main portfolio...");
+        setTimeout(() => {
+            window.open("https://ayaanrathod.github.io/Personal-Portfolio/", "_blank");
+        }, 300);
+    },
+
     ls(dir = null) {
         if (dir) {
             if (dir.match(/^~\/?$/)) {
-                // ls ~ or ls ~/
                 print_home();
             } else if (dir.startsWith('~/')) {
                 const path = dir.substring(2);
@@ -216,13 +212,10 @@ More projects coming soon...
         }
     },
     
-
     clear() {
         term.clear();
-        
-     ready();
+        ready();
     }
-
 };
 
 // Help formatter
@@ -265,12 +258,9 @@ const term = $('body').terminal(commands, {
     greetings: false,
     checkArity: false,
     exit: false,
-    clear:false,
+    clear: false,
     completion(string) {
-        // in every function we can use `this` to reference term object
         const cmd = this.get_command();
-        // we process the command to extract the command name
-        // and the rest of the command (the arguments as one string)
         const { name, rest } = $.terminal.parse_command(cmd);
         if (['cd', 'ls'].includes(name)) {
             if (rest.startsWith('~/')) {
@@ -292,6 +282,6 @@ term.pause();
 
 // Terminal event handlers
 term.on('click', '.command', function() {
-   const command = $(this).text();
-   term.exec(command);
+    const command = $(this).text();
+    term.exec(command);
 });
