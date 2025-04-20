@@ -123,31 +123,51 @@ body, html {
     
     .terminal {
         padding: 0.5rem;
+        /* Ensure terminal itself can scroll if content overflows */
+        overflow-y: auto;
+        /* Try using viewport height minus header approx height */
+        /* This is tricky due to keyboard variable height */
+        /* max-height: calc(100vh - 50px); */ /* May need adjustment or removal */
     }
     
     .terminal-header {
         padding: 0.7rem;
+        flex-shrink: 0; /* Prevent header from shrinking */
     }
     
     /* Improve touch target sizes */
     .cmd {
         padding: 8px 0;
+        /* Ensure the input line doesn't get pushed off */
+        flex-shrink: 0;
     }
     
     /* Make links more tappable */
     .terminal a, .command, .directory {
-        padding: 4px 0;
+        padding: 4px 2px; /* Add slight horizontal padding */
         display: inline-block;
     }
     
     /* Fix keyboard overlap issues */
     .terminal-container {
-        max-height: 100vh;
+        height: 100%; /* Use full viewport height */
+        max-height: 100vh; /* Explicitly set max height */
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .terminal-wrap {
+        flex-grow: 1; /* Allow wrap to take remaining space */
+        overflow: hidden; /* Wrap controls overflow, terminal scrolls internally */
+        display: flex; /* Use flexbox to manage terminal height */
+        flex-direction: column;
     }
     
     /* Better scrolling for mobile */
     .terminal {
         -webkit-overflow-scrolling: touch;
+        flex-grow: 1; /* Allow terminal content area to grow */
+        /* overflow: auto; */ /* Let terminal handle its own scroll */
     }
 }
 
@@ -189,10 +209,10 @@ body, html {
     }
 }
 
-/* Add styles to help with mobile keyboard */
-.ios-keyboard-open .terminal-container {
+/* Remove unreliable iOS keyboard class */
+/* .ios-keyboard-open .terminal-container {
     height: 50vh !important;
-}
+} */
 
 /* Improve tap targets for commands */
 .command, .directory {

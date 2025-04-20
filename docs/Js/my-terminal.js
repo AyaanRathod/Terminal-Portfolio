@@ -1,48 +1,17 @@
 // Constants and Global Variables
 const root = '~';
-let cwd = root;
+let cwd = root; // Current working directory state
 const user = 'guest';
 const server = 'AyaanRathod';
 const font = 'slant';
-// Add mobile detection
-let isMobile = window.innerWidth <= 768;
+let isMobile = window.innerWidth <= 768; // Mobile detection
 
-const commandDescriptions = {
-    ls: "Lists contents of current directory",
-    echo: "Prints text to the terminal",
-    aboutme: "Displays information about me",
-    github: "Opens my GitHub profile",
-    resume: "Opens my resume/CV",
-    projects: "Shows my portfolio projects",
-    main: "Redirects to my main portfolio site",
-    clear: "Clears the terminal screen"
-};
+// Command descriptions, directory data, and command implementations
+// are now expected to be loaded from commands.js
 
-// Directory data
-const directories = {
-    education: [
-        '',
-        '[[;white;]My Computer Science Courses:]',
-        '',
-        '• [[;yellow;]COSC 1P02] - Introduction to Computer Science',
-        '• [[;yellow;]COSC 1P03] - Introduction to Data Structures',
-        '• [[;yellow;]COSC 2P03] - Advanced Data Structures',
-        '• [[;yellow;]COSC 3P94] - Human Computer Interaction', 
-        '• [[;yellow;]COSC 4P50] - Introduction to Cybersecurity',
-        '• [[;yellow;]COSC 2P08] - Programming Big Data with Python',
-        '• [[;yellow;]COSC 2P89] - Introduction to Web Development',
-        ''
-    ]
-};
-
-// Utility functions
-function print_home() {
-    term.echo(dirs.map(dir => {
-        return `<blue class="directory">${dir}</blue>`;
-    }).join('\n'));
-}
-
+// Utility functions (keep ones needed by my-terminal.js)
 function prompt() {
+    // Use the global cwd variable
     return `<green>${user}<white>@</white><magenta>${server}</magenta></green>:<blue>${cwd}</blue>$ `;
 }
 
@@ -63,18 +32,18 @@ function render(text) {
     }));
 }
 
-function ready() {
+// Make ready function global so commands.js (clear command) can call it
+window.ready = function() {
     // Use the same rendering function for both mobile and desktop
     term.echo(() => (render('Ayaan Rathod')))
        .echo('[[;cyan;]\nWelcome to my' + (isMobile ? '' : ' Interactive') + ' Terminal Portfolio!]')
        .echo('');
-       
+
     if (isMobile) {
-        // Shorter instructions for mobile to save screen space
+        // Shorter instructions for mobile
         term.echo('[[;#44D544;]→] Type [[;yellow;]help] for commands')
             .echo('[[;#44D544;]→] Try [[;yellow;]aboutme] to learn about me')
-            .echo('')
-            .resume();
+            .echo('');
     } else {
         // Full instructions for desktop
         term.echo('[[;#44D544;]→] Type [[;yellow;]help] to see all available commands')
@@ -83,261 +52,132 @@ function ready() {
            .echo('[[;#44D544;]→] Use [[;yellow;]cd education] to view my academic courses')
            .echo('[[;#44D544;]→] Use [[;yellow;]main] to visit my main portfolio site')
            .echo('')
-           .echo('[[;white;]Navigate like you would in a real terminal - have fun exploring!]\n')
-           .resume();
+           .echo('[[;white;]Navigate like you would in a real terminal - have fun exploring!]\n');
+    }
+    // Ensure terminal is resumed only after initial setup
+    // Check if terminal exists and is paused before resuming
+    if (term && term.paused()) {
+        term.resume();
     }
 }
 
-// Terminal commands
-const commands = {
-    help() {
-        term.echo("\n[[;white;]AVAILABLE COMMANDS:]\n");
-        
-        for (const cmd in commandDescriptions) {
-            term.echo(
-                `  [[;yellow;]${cmd.padEnd(10)}] ${commandDescriptions[cmd]}`
-            );
-        }
-        term.echo("\nType any command to execute it.\n");
-    },
+// Terminal commands object is now loaded from commands.js
+// Ensure commands.js is loaded before this script in index.html
 
-    cd(dir = null) {
-        if (dir === null || dir === '~' || dir === '/') {
-            cwd = root;
-            return;
-        } 
-        
-        if (dir === '..') {
-            if (cwd !== root) {
-                cwd = root;
-            }
-            return;
-        }
-        
-        if (dirs.includes(dir)) {
-            cwd = root + '/' + dir;
-        } else {
-            term.echo(`cd: ${dir}: No such directory`);
-        }
-    },
-
-    aboutme() {
-        term.echo(`
-I'm a 3rd year Computer Science student passionate about:
-• [[;white;]Web Development]
-• [[;white;]Software Engineering]
-• [[;white;]AI & Machine Learning]
-
-In my free time, I enjoy reading books and working 
-on personal coding projects.
-
-For more information, try: 
-[[;yellow;]github] - to check out my repositories
-[[;yellow;]resume] - to view my full CV
-[[;yellow;]cd education] - to see my courses
-    `);
-    },
-
-    echo(...args) {
-        if (args.length > 0) {
-            term.echo(args.join(' '));
-        }
-    },
-    
-    github() {
-        term.echo("Opening GitHub profile...");
-        setTimeout(() => {
-            window.open("https://github.com/AyaanRathod", "_blank");
-        }, 200);
-    },
-
-    resume() {
-        term.echo("Opening my resume...");
-        setTimeout(() => {
-            window.open("https://rxresu.me/ayaanrathod/ayaan-rathod-resume", "_blank");
-        }, 300);
-    },
-
-    projects() {
-        term.echo(`
-<a href="https://github.com/AyaanRathod/Terminal-Portfolio" target="_blank">[[;orange;]🔗 Terminal Portfolio] [[;white;](Current website you're seeing)]</a>
-A terminal-style portfolio website built with JavaScript 
-that simulates a command-line interface.
-[[;cyan;]Technologies:] JavaScript, HTML, CSS, jQuery Terminal
-
-<a href="https://ayaanrathod.github.io/Personal-Portfolio/" target="_blank">[[;orange;]🔗 Main Portfolio]</a>
-My main portfolio website, showcasing my projects and skills.
-[[;cyan;]Technologies:] HTML, CSS, JavaScript
-
-<a href="#" target="_blank">[[;orange;]🔗 LinkedIn Ad Blocker]</a>
-Developed a lightweight browser extension to block ads on LinkedIn,
-enhancing user privacy and browsing experience.
-
-[[;#44D544;]Highlights:]
-• Created essential files (manifest.json, background.js, linkedin.js)
-• Implemented background scripts for seamless ad blocking
-• Contributed to open-source by sharing on GitHub
-
-More projects coming soon... 
-                `);
-    },
-
-    main() {
-        term.echo("Redirecting to the main portfolio...");
-        setTimeout(() => {
-            window.open("https://ayaanrathod.github.io/Personal-Portfolio/", "_blank");
-        }, 300);
-    },
-
-    ls(dir = null) {
-        if (dir) {
-            if (dir.match(/^~\/?$/)) {
-                print_home();
-            } else if (dir.startsWith('~/')) {
-                const path = dir.substring(2);
-                const dirs = path.split('/');
-                if (dirs.length > 1) {
-                    term.echo('[[;#ff5555;]Invalid directory]');
-                } else {
-                    const dir = dirs[0];
-                    if (dir in directories) {
-                        term.echo(directories[dir].join('\n'));
-                    } else {
-                        term.echo('[[;#ff5555;]Invalid directory]');
-                    }
-                }
-            } else if (cwd === root) {
-                if (dir in directories) {
-                    term.echo(directories[dir].join('\n'));
-                } else {
-                    term.echo('[[;#ff5555;]Invalid directory]');
-                }
-            } else if (dir === '..') {
-                print_home();
-            } else {
-                term.echo('[[;#ff5555;]Invalid directory]');
-            }
-        } else if (cwd === root) {
-            print_home();
-        } else {
-            const dir = cwd.substring(2);
-            term.echo(directories[dir].join('\n'));
-        }
-    },
-    
-    clear() {
-        term.clear();
-        ready();
-    }
-};
-
-// Help formatter
+// Help formatter (using command_list from commands.js)
 const formatter = new Intl.ListFormat('en', {
     style: 'long',
     type: 'conjunction',
 });
 
-const command_list = Object.keys(commands);
-const formatted_list = command_list.map(cmd => {
-    return `<white class="command">${cmd}</white>`;
-});
+// Ensure command_list is available from commands.js
+const formatted_list = typeof command_list !== 'undefined'
+    ? command_list.map(cmd => `<white class="command">${cmd}</white>`)
+    : [];
 const help = formatter.format(formatted_list);
-
-// Get directory names
-const dirs = Object.keys(directories);
 
 // Terminal setup and configuration
 figlet.defaults({ fontPath: 'https://unpkg.com/figlet/fonts' });
-figlet.preloadFonts([font], ready);
+// Call the global ready function once fonts are loaded
+figlet.preloadFonts([font], window.ready);
 
 // Terminal formatters
-$.terminal.xml_formatter.tags.green = () => {
-    return `[[;#44D544;]`;
-};
+$.terminal.xml_formatter.tags.green = () => `[[;#44D544;]`;
+$.terminal.xml_formatter.tags.blue = (attrs) => `[[;#55F;;${attrs.class}]`;
 
-$.terminal.xml_formatter.tags.blue = (attrs) => {
-    return `[[;#55F;;${attrs.class}]`;
-};
-
-const any_command_re = new RegExp(`^\s*(${command_list.join('|')})`);
-const re = new RegExp(`^\s*(${command_list.join('|')})(\s?.*)`);
+// Ensure command_list is available for the regex
+const command_list_for_re = typeof command_list !== 'undefined' ? command_list : ['help', 'ls', 'cd', 'echo', 'aboutme', 'github', 'resume', 'projects', 'main', 'clear']; // Fallback
+const any_command_re = new RegExp(`^\\s*(${command_list_for_re.join('|')})`);
+const re = new RegExp(`^\\s*(${command_list_for_re.join('|')})(\\s?.*)`);
 
 $.terminal.new_formatter([re, function(_, command, args) {
-    return `<white>${command}</white><aqua>${args}</aqua>`;
+    // Check if args exist before adding aqua formatting
+    return args && args.trim() !== ''
+        ? `<white>${command}</white><aqua>${args}</aqua>`
+        : `<white>${command}</white>`;
 }]);
 
-// Fix for double prompt issue on mobile and improve scrolling
-if ('ontouchstart' in window) {
-    // Add a custom handler for the Enter key
-    $(document).on('keydown.terminal', function(e) {
-        // Ensure we only handle Enter key (keyCode 13)
-        if (e.key === 'Enter' || e.keyCode === 13) {
-            if (term && term.enabled()) {
-                // Prevent default behavior (like form submission or double execution)
-                e.preventDefault();
-                const command = term.get_command().trim();
-                if (command) {
-                    term.set_command(''); // Clear the command line first
-                    term.exec(command);   // Execute the command
-                    // Scroll to the bottom after a short delay to ensure output is visible
-                    setTimeout(() => {
-                        term.scroll_to_bottom();
-                    }, 50); // 50ms delay might need adjustment
-                }
-                return false; // Stop event propagation
-            }
-        }
-        // Allow other keys (like spacebar) to behave normally
-        return true;
-    });
-}
+// REMOVED custom mobile keydown handler
 
-// Terminal initialization with minimalistic mobile settings
-const term = $('.terminal-wrap').terminal(commands, {
-    greetings: false,
+// Terminal initialization
+// Ensure 'commands' object is available from commands.js
+const term = $('.terminal-wrap').terminal(typeof commands !== 'undefined' ? commands : {}, { // Use commands from commands.js
+    greetings: false, // Disable default greetings, we use ready()
     checkArity: false,
     exit: false,
-    clear: false,
+    clear: false, // Disable built-in clear, use our command
     completion(string) {
+        // Ensure 'dirs' is available from commands.js
+        const available_dirs = typeof dirs !== 'undefined' ? dirs : []; // Fallback
         const cmd = this.get_command();
         const { name, rest } = $.terminal.parse_command(cmd);
         if (['cd', 'ls'].includes(name)) {
             if (rest.startsWith('~/')) {
-                return dirs.map(dir => `~/${dir}`);
+                return available_dirs.map(dir => `~/${dir}`);
             }
-            if (rest.startsWith('../') && cwd != root) {
-                return dirs.map(dir => `../${dir}`);
+            if (cwd !== root) { // Allow '..' completion only if not in root
+                 if (rest.startsWith('../')) {
+                     // Basic completion for ../ - could be smarter
+                     return ['../'];
+                 }
+                 // Add current directory files/dirs if needed in future
             }
-            if (cwd === root) {
-                return dirs;
+            if (cwd === root) { // Suggest dirs from root
+                return available_dirs;
             }
         }
-        return Object.keys(commands);
+        // Use command_list from commands.js for command completion
+        return typeof command_list !== 'undefined' ? command_list : [];
     },
     prompt,
-    mobileMode: isMobile,
-    scrollOnEcho: true,
-    historySize: 40
+    mobileMode: isMobile, // Enable/disable mobile specific behavior
+    scrollOnEcho: true, // Try enabling default scroll on echo
+    historySize: 40,
+    // Hook after command execution to ensure scroll
+    onAfterExec: function() {
+        this.scroll_to_bottom();
+    },
+    // Adjust focus behavior slightly
+    focus: true // Keep focus on load/interaction
 });
 
+// Pause terminal initially until figlet fonts are loaded and ready() is called
 term.pause();
 
 // Terminal event handlers
 term.on('click', '.command', function() {
     const command = $(this).text();
-    term.exec(command);
+    term.exec(command, true); // Execute silently if needed, or just term.exec(command)
+    // No need to manually scroll here if onAfterExec works
 });
+
+term.on('click', '.directory', function() {
+    const dir = $(this).text();
+    term.exec(`cd ${dir}`, true);
+});
+
 
 // Handle window resizing
 window.addEventListener('resize', function() {
-    isMobile = window.innerWidth <= 768;
-    term.settings().mobileMode = isMobile;
+    const newIsMobile = window.innerWidth <= 768;
+    if (newIsMobile !== isMobile) {
+        isMobile = newIsMobile;
+        term.settings().mobileMode = isMobile;
+        // Optionally re-run ready() or adjust display if needed
+        // term.clear(); // Example: clear and re-run ready on mode change
+        // ready();
+    }
+    // Adjust layout or figlet rendering on resize if necessary
+    term.resize(); // Notify terminal about resize
 });
 
-// Handle touch events better on mobile
+// Handle touch events for focus (keep this)
 if ('ontouchstart' in window) {
-    document.addEventListener('touchstart', function() {
-        // Focus the terminal input on touch anywhere in the page
-        term.focus();
+    document.addEventListener('touchstart', function(e) {
+        // Only focus if the touch is not on an interactive element like a link
+        if (!$(e.target).closest('a, .command, .directory').length) {
+             // Small delay might help prevent interfering with scrolling/tapping links
+             setTimeout(() => term.focus(), 50);
+        }
     });
 }
