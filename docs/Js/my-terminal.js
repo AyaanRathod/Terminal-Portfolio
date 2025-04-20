@@ -290,11 +290,11 @@ const term = $('.terminal-wrap').terminal(commands, {
         return Object.keys(commands);
     },
     prompt,
-    mobileIngoreAutoSpace: true, // Improves typing experience on mobile
-    mobileMode: isMobile,        // Enable mobile-specific optimizations
+    // Correct mobile settings
+    mobileIngoreAutoSpace: false, // Use default behavior
+    mobileMode: true,            // Always enable mobile mode for better touch support
     scrollOnEcho: true,          // Better scrolling behavior
-    // Add custom options for mobile
-    mobileKeepKeyboard: false,   // Don't keep keyboard open after command
+    mobileKeys: true,            // Better keyboard handling on mobile
     historySize: 40,
     historyPersistence: true     // Save command history
 });
@@ -312,84 +312,36 @@ window.addEventListener('resize', function() {
     isMobile = window.innerWidth <= 768;
     
     // Update terminal settings based on screen size
-    term.settings().mobileMode = isMobile;
+    term.settings().mobileMode = true; // Keep mobile mode enabled
     
     // Re-initialize terminal if needed
     if (term.cols() < 80 && !isMobile) {
         isMobile = true;
-        term.settings().mobileMode = true;
-    }
-    
-    // Check if keyboard might be open (on mobile)
-    if (isMobile && window.innerHeight < window.outerHeight * 0.8) {
-        isKeyboardOpen = true;
-    } else {
-        isKeyboardOpen = false;
     }
 });
 
-// Override command processing to fix double prompt issue
-if (isMobile) {
-    const originalExec = term.exec;
-    term.exec = function(command, ...args) {
-        // Debounce rapid executions to prevent double prompts
-        if (this.last_command === command && Date.now() - this.last_exec_time < 500) {
-            return;
-        }
-        this.last_command = command;
-        this.last_exec_time = Date.now();
-        return originalExec.call(this, command, ...args);
-    };
-}
-
-// Enhance mobile experience
+// Handle touch events on clickable elements only
 if ('ontouchstart' in window) {
-    // Fix keyboard focus issues
-    document.addEventListener('touchstart', function(e) {
-        // Focus terminal but don't automatically open keyboard
-        if (e.target.tagName !== 'INPUT') {
-            e.preventDefault();
-            term.focus(true);
-        }
-    });
-    
-    // Handle command execution to ensure content visibility
-    term.on('exec', function(command) {
-        // Scroll after command execution to ensure content is visible
-        setTimeout(function() {
-            // Ensure output is visible by scrolling to bottom
-            term.scroll_to_bottom();
-            
-            // Close the mobile keyboard after command execution
-            if (document.activeElement instanceof HTMLElement) {
-                document.activeElement.blur();
-            }
-        }, 300);
-    });
-    
-    // Handle input to avoid duplicate prompts
-    term.on('keydown', function(e) {
-        if (e.key === 'Enter' && isMobile) {
-            // Prevent default to avoid duplicate enter events on some mobile browsers
-            e.preventDefault();
-            const command = term.get_command();
-            term.set_command('');
-            term.exec(command);
-        }
-    });
-}
-
-// Add a helper function to make commands more mobile-friendly
-function ensureVisibleOutput() {
-    if (isMobile) {
+    // Make commands and directories clickable without double-prompts
+    $(document).on('touchend', '.command, .directory', function(e) {
+        e.preventDefault();
+        const command = $(this).text();
+        term.set_command(command);
+        // Use setTimeout to avoid double-execution
         setTimeout(() => {
-            term.scroll_to_bottom();
-        }, 100);
-    }
+            term.exec();
+        }, 50);
+    });
 }
 
-// Enhance existing commands with mobile fixes
-const originalCommands = {...commands};
+// Simplify the auto-scroll function
+function ensureVisibleOutput() {
+    setTimeout(() => {
+        term.scroll_to_bottom();
+    }, 100);
+}
+
+// We'll retain only the essential command enhancement
 for (const cmd in commands) {
     const originalFunction = commands[cmd];
     commands[cmd] = function(...args) {
@@ -397,12 +349,4 @@ for (const cmd in commands) {
         ensureVisibleOutput();
         return result;
     };
-}
-
-// Handle touch events better on mobile
-if ('ontouchstart' in window) {
-    document.addEventListener('touchstart', function() {
-        // Focus the terminal input on touch anywhere in the page
-        term.focus();
-    });
 }

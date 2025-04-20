@@ -28,30 +28,14 @@
     <script src="https://cdn.jsdelivr.net/npm/isomorphic-lolcat"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery.terminal/js/xml_formatting.js"></script>
     
-    <!-- Add keyboard detection script -->
+    <!-- Simplified keyboard detection script -->
     <script>
-    // Detect virtual keyboard on mobile devices
-    let originalHeight = window.innerHeight;
-    window.addEventListener('resize', function() {
-        if (window.innerHeight < originalHeight) {
-            // Keyboard likely opened
-            document.body.classList.add('keyboard-open');
-        } else {
-            // Keyboard likely closed
-            document.body.classList.remove('keyboard-open');
-            originalHeight = window.innerHeight;
-        }
-    });
-    
-    // Prevent double-tap zoom on mobile
+    // Simple prevention of double-tap zoom on mobile
     document.addEventListener('touchend', function(e) {
-        const now = Date.now();
-        const DOUBLE_TAP_THRESHOLD = 300;
-        if (now - (window.lastTouchEnd || 0) < DOUBLE_TAP_THRESHOLD) {
+        if (e.target.tagName !== 'INPUT') {
             e.preventDefault();
         }
-        window.lastTouchEnd = now;
-    }, false);
+    }, { passive: false });
     </script>
     
     <script src="./Js/my-terminal.js"></script>
