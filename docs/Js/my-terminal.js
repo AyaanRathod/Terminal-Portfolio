@@ -6,7 +6,6 @@ const server = 'AyaanRathod';
 const font = 'slant';
 // Add mobile detection
 let isMobile = window.innerWidth <= 768;
-let isKeyboardOpen = false;
 
 const commandDescriptions = {
     ls: "Lists contents of current directory",
@@ -267,7 +266,24 @@ $.terminal.new_formatter([re, function(_, command, args) {
     return `<white>${command}</white><aqua>${args}</aqua>`;
 }]);
 
-// Terminal initialization with mobile-friendly settings
+// Fix for double prompt issue on mobile
+if ('ontouchstart' in window) {
+    // Add a custom handler for the Enter key
+    $(document).on('keydown.terminal', function(e) {
+        if (e.key === 'Enter' && term && term.enabled()) {
+            // Prevent double execution on mobile
+            e.preventDefault();
+            if (term.get_command().trim()) {
+                const command = term.get_command().trim();
+                term.set_command('');
+                term.exec(command);
+            }
+            return false;
+        }
+    });
+}
+
+// Terminal initialization with minimalistic mobile settings
 const term = $('.terminal-wrap').terminal(commands, {
     greetings: false,
     checkArity: false,
@@ -290,27 +306,9 @@ const term = $('.terminal-wrap').terminal(commands, {
         return Object.keys(commands);
     },
     prompt,
-    // Refined mobile settings
-    mobileMode: true,
+    mobileMode: isMobile,
     scrollOnEcho: true,
-    historySize: 40,
-    historyPersistence: true,
-    // Fix the enter key issue
-    keymap: {
-        ENTER: function(e, original) {
-            if (isMobile) {
-                e.preventDefault();
-                const command = this.get_command();
-                if (command) {
-                    this.set_command('');
-                    this.exec(command);
-                }
-                return false;
-            } else {
-                return original(e);
-            }
-        }
-    }
+    historySize: 40
 });
 
 term.pause();
@@ -321,57 +319,16 @@ term.on('click', '.command', function() {
     term.exec(command);
 });
 
-// Add responsive behavior for window resizing
+// Handle window resizing
 window.addEventListener('resize', function() {
     isMobile = window.innerWidth <= 768;
-    
-    // Update terminal settings based on screen size
-    term.settings().mobileMode = true; // Keep mobile mode enabled
-    
-    // Re-initialize terminal if needed
-    if (term.cols() < 80 && !isMobile) {
-        isMobile = true;
-    }
+    term.settings().mobileMode = isMobile;
 });
 
-// Fix for touch events and command input
+// Handle touch events better on mobile
 if ('ontouchstart' in window) {
-    // Remove any duplicate handlers
-    $(document).off('touchend', '.command, .directory');
-    
-    // Only handle clicks on commands and directories
-    $(document).on('touchend', '.command, .directory', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const command = $(this).text();
-        term.set_command(command);
-        term.exec();
-    });
-    
-    // Prevent the double-enter issue by intercepting the event
-    term.on('keydown', function(e) {
-        if (e.key === 'Enter' && isMobile) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
+    document.addEventListener('touchstart', function() {
+        // Focus the terminal input on touch anywhere in the page
+        term.focus();
     });
 }
-
-// Remove the previous command enhancement which might be causing issues
-for (const cmd in commands) {
-    const originalFunction = commands[cmd];
-    commands[cmd] = function(...args) {
-        return originalFunction.apply(this, args);
-    };
-}
-
-// Add a simple utility function to ensure output is visible
-function scrollToBottom() {
-    term.scroll_to_bottom();
-}
-
-// Add a simple command executed event handler
-term.on('cmd', function() {
-    setTimeout(scrollToBottom, 100);
-});
