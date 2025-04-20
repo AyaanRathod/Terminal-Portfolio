@@ -266,20 +266,29 @@ $.terminal.new_formatter([re, function(_, command, args) {
     return `<white>${command}</white><aqua>${args}</aqua>`;
 }]);
 
-// Fix for double prompt issue on mobile
+// Fix for double prompt issue on mobile and improve scrolling
 if ('ontouchstart' in window) {
     // Add a custom handler for the Enter key
     $(document).on('keydown.terminal', function(e) {
-        if (e.key === 'Enter' && term && term.enabled()) {
-            // Prevent double execution on mobile
-            e.preventDefault();
-            if (term.get_command().trim()) {
+        // Ensure we only handle Enter key (keyCode 13)
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            if (term && term.enabled()) {
+                // Prevent default behavior (like form submission or double execution)
+                e.preventDefault();
                 const command = term.get_command().trim();
-                term.set_command('');
-                term.exec(command);
+                if (command) {
+                    term.set_command(''); // Clear the command line first
+                    term.exec(command);   // Execute the command
+                    // Scroll to the bottom after a short delay to ensure output is visible
+                    setTimeout(() => {
+                        term.scroll_to_bottom();
+                    }, 50); // 50ms delay might need adjustment
+                }
+                return false; // Stop event propagation
             }
-            return false;
         }
+        // Allow other keys (like spacebar) to behave normally
+        return true;
     });
 }
 
