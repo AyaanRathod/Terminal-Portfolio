@@ -1,8 +1,8 @@
 :root {
-    --size: 1.3;
     --terminal-font: 'Fira Mono', 'Consolas', 'Courier New', monospace;
     --terminal-bg: #0c0c0c;
     --terminal-text: #cccccc;
+    --base-font-size: 14px;
 }
 
 body, html {
@@ -10,21 +10,69 @@ body, html {
     height: 100%;
     margin: 0;
     padding: 0;
+    color: var(--terminal-text);
+    font-family: var(--terminal-font);
+}
+
+.terminal-container {
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.terminal-header {
+    background-color: #2d2d2d;
+    padding: 0.5rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.terminal-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.terminal-button {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.terminal-button.close {
+    background-color: #ff5f56;
+}
+
+.terminal-button.minimize {
+    background-color: #ffbd2e;
+}
+
+.terminal-button.maximize {
+    background-color: #27c93f;
+}
+
+.terminal-wrap {
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 .terminal, .cmd, .terminal .terminal-output div div, .cmd .prompt {
     font-family: var(--terminal-font) !important;
-    font-size: 5px;
+    font-size: var(--base-font-size);
     line-height: 1.4;
 }
 
 .terminal {
-    padding: 10px;
+    padding: 1rem;
+    height: 100% !important;
 }
 
 .terminal-output > div {
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
 }
 
 .command .directory {
@@ -53,5 +101,70 @@ body, html {
 
 .terminal::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* Make buttons more touch-friendly */
+.terminal-button {
+    min-width: 1rem;
+    min-height: 1rem;
+}
+
+/* Media queries for responsive design */
+/* Mobile phones */
+@media screen and (max-width: 480px) {
+    :root {
+        --base-font-size: 12px;
+    }
+    
+    .terminal-button {
+        min-width: 1.2rem;
+        min-height: 1.2rem;
+    }
+    
+    .terminal {
+        padding: 0.5rem;
+    }
+    
+    .terminal-header {
+        padding: 0.7rem;
+    }
+}
+
+/* Tablets */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+    :root {
+        --base-font-size: 13px;
+    }
+    
+    .terminal-container {
+        max-height: 90vh;
+        margin: 5vh auto;
+    }
+}
+
+/* Larger screens */
+@media screen and (min-width: 769px) {
+    .terminal-container {
+        max-height: 80vh;
+        margin: 10vh auto;
+        max-width: 90%;
+    }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .terminal-container {
+        max-height: 100vh;
+        margin: 0 auto;
+    }
+    
+    .terminal-header {
+        padding: 0.3rem;
+    }
+    
+    .terminal-button {
+        min-width: 0.8rem;
+        min-height: 0.8rem;
+    }
 }
 

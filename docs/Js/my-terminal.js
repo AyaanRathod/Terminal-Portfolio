@@ -4,6 +4,8 @@ let cwd = root;
 const user = 'guest';
 const server = 'AyaanRathod';
 const font = 'slant';
+// Add mobile detection
+let isMobile = window.innerWidth <= 768;
 
 const commandDescriptions = {
     ls: "Lists contents of current directory",
@@ -62,17 +64,28 @@ function render(text) {
 }
 
 function ready() {
+    // Use the same rendering function for both mobile and desktop
     term.echo(() => (render('Ayaan Rathod')))
-   .echo('[[;cyan;]\nWelcome to my Interactive Terminal Portfolio!]')
-   .echo('')
-   .echo('[[;#44D544;]→] Type [[;yellow;]help] to see all available commands')
-   .echo('[[;#44D544;]→] Try [[;yellow;]aboutme] to learn about my background')
-   .echo('[[;#44D544;]→] Check out [[;yellow;]projects] to see what I\'ve built')
-   .echo('[[;#44D544;]→] Use [[;yellow;]cd education] to view my academic courses')
-   .echo('[[;#44D544;]→] Use [[;yellow;]main] to visit my main portfolio site')
-   .echo('')
-   .echo('[[;white;]Navigate like you would in a real terminal - have fun exploring!]\n')
-   .resume();
+       .echo('[[;cyan;]\nWelcome to my' + (isMobile ? '' : ' Interactive') + ' Terminal Portfolio!]')
+       .echo('');
+       
+    if (isMobile) {
+        // Shorter instructions for mobile to save screen space
+        term.echo('[[;#44D544;]→] Type [[;yellow;]help] for commands')
+            .echo('[[;#44D544;]→] Try [[;yellow;]aboutme] to learn about me')
+            .echo('')
+            .resume();
+    } else {
+        // Full instructions for desktop
+        term.echo('[[;#44D544;]→] Type [[;yellow;]help] to see all available commands')
+           .echo('[[;#44D544;]→] Try [[;yellow;]aboutme] to learn about my background')
+           .echo('[[;#44D544;]→] Check out [[;yellow;]projects] to see what I\'ve built')
+           .echo('[[;#44D544;]→] Use [[;yellow;]cd education] to view my academic courses')
+           .echo('[[;#44D544;]→] Use [[;yellow;]main] to visit my main portfolio site')
+           .echo('')
+           .echo('[[;white;]Navigate like you would in a real terminal - have fun exploring!]\n')
+           .resume();
+    }
 }
 
 // Terminal commands
@@ -253,8 +266,8 @@ $.terminal.new_formatter([re, function(_, command, args) {
     return `<white>${command}</white><aqua>${args}</aqua>`;
 }]);
 
-// Terminal initialization
-const term = $('body').terminal(commands, {
+// Terminal initialization with mobile-friendly settings
+const term = $('.terminal-wrap').terminal(commands, {
     greetings: false,
     checkArity: false,
     exit: false,
@@ -275,7 +288,10 @@ const term = $('body').terminal(commands, {
         }
         return Object.keys(commands);
     },
-    prompt
+    prompt,
+    mobileIngoreAutoSpace: true, // Improves typing experience on mobile
+    mobileMode: isMobile,        // Enable mobile-specific optimizations
+    scrollOnEcho: true           // Better scrolling behavior
 });
 
 term.pause();
@@ -285,3 +301,25 @@ term.on('click', '.command', function() {
     const command = $(this).text();
     term.exec(command);
 });
+
+// Add responsive behavior for window resizing
+window.addEventListener('resize', function() {
+    isMobile = window.innerWidth <= 768;
+    
+    // Update terminal settings based on screen size
+    term.settings().mobileMode = isMobile;
+    
+    // Re-initialize terminal if needed
+    if (term.cols() < 80 && !isMobile) {
+        isMobile = true;
+        term.settings().mobileMode = true;
+    }
+});
+
+// Handle touch events better on mobile
+if ('ontouchstart' in window) {
+    document.addEventListener('touchstart', function() {
+        // Focus the terminal input on touch anywhere in the page
+        term.focus();
+    });
+}
