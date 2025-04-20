@@ -6,6 +6,7 @@ const server = 'AyaanRathod';
 const font = 'slant';
 // Add mobile detection
 let isMobile = window.innerWidth <= 768;
+let isKeyboardOpen = false;
 
 const commandDescriptions = {
     ls: "Lists contents of current directory",
@@ -291,7 +292,11 @@ const term = $('.terminal-wrap').terminal(commands, {
     prompt,
     mobileIngoreAutoSpace: true, // Improves typing experience on mobile
     mobileMode: isMobile,        // Enable mobile-specific optimizations
-    scrollOnEcho: true           // Better scrolling behavior
+    scrollOnEcho: true,          // Better scrolling behavior
+    // Add custom options for mobile
+    mobileKeepKeyboard: false,   // Don't keep keyboard open after command
+    historySize: 40,
+    historyPersistence: true     // Save command history
 });
 
 term.pause();
@@ -314,7 +319,85 @@ window.addEventListener('resize', function() {
         isMobile = true;
         term.settings().mobileMode = true;
     }
+    
+    // Check if keyboard might be open (on mobile)
+    if (isMobile && window.innerHeight < window.outerHeight * 0.8) {
+        isKeyboardOpen = true;
+    } else {
+        isKeyboardOpen = false;
+    }
 });
+
+// Override command processing to fix double prompt issue
+if (isMobile) {
+    const originalExec = term.exec;
+    term.exec = function(command, ...args) {
+        // Debounce rapid executions to prevent double prompts
+        if (this.last_command === command && Date.now() - this.last_exec_time < 500) {
+            return;
+        }
+        this.last_command = command;
+        this.last_exec_time = Date.now();
+        return originalExec.call(this, command, ...args);
+    };
+}
+
+// Enhance mobile experience
+if ('ontouchstart' in window) {
+    // Fix keyboard focus issues
+    document.addEventListener('touchstart', function(e) {
+        // Focus terminal but don't automatically open keyboard
+        if (e.target.tagName !== 'INPUT') {
+            e.preventDefault();
+            term.focus(true);
+        }
+    });
+    
+    // Handle command execution to ensure content visibility
+    term.on('exec', function(command) {
+        // Scroll after command execution to ensure content is visible
+        setTimeout(function() {
+            // Ensure output is visible by scrolling to bottom
+            term.scroll_to_bottom();
+            
+            // Close the mobile keyboard after command execution
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        }, 300);
+    });
+    
+    // Handle input to avoid duplicate prompts
+    term.on('keydown', function(e) {
+        if (e.key === 'Enter' && isMobile) {
+            // Prevent default to avoid duplicate enter events on some mobile browsers
+            e.preventDefault();
+            const command = term.get_command();
+            term.set_command('');
+            term.exec(command);
+        }
+    });
+}
+
+// Add a helper function to make commands more mobile-friendly
+function ensureVisibleOutput() {
+    if (isMobile) {
+        setTimeout(() => {
+            term.scroll_to_bottom();
+        }, 100);
+    }
+}
+
+// Enhance existing commands with mobile fixes
+const originalCommands = {...commands};
+for (const cmd in commands) {
+    const originalFunction = commands[cmd];
+    commands[cmd] = function(...args) {
+        const result = originalFunction.apply(this, args);
+        ensureVisibleOutput();
+        return result;
+    };
+}
 
 // Handle touch events better on mobile
 if ('ontouchstart' in window) {

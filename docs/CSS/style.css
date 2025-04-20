@@ -113,7 +113,7 @@ body, html {
 /* Mobile phones */
 @media screen and (max-width: 480px) {
     :root {
-        --base-font-size: 12px;
+        --base-font-size: 14px; /* Slightly larger font for better readability */
     }
     
     .terminal-button {
@@ -127,6 +127,27 @@ body, html {
     
     .terminal-header {
         padding: 0.7rem;
+    }
+    
+    /* Improve touch target sizes */
+    .cmd {
+        padding: 8px 0;
+    }
+    
+    /* Make links more tappable */
+    .terminal a, .command, .directory {
+        padding: 4px 0;
+        display: inline-block;
+    }
+    
+    /* Fix keyboard overlap issues */
+    .terminal-container {
+        max-height: 100vh;
+    }
+    
+    /* Better scrolling for mobile */
+    .terminal {
+        -webkit-overflow-scrolling: touch;
     }
 }
 
@@ -166,5 +187,26 @@ body, html {
         min-width: 0.8rem;
         min-height: 0.8rem;
     }
+}
+
+/* Add styles to help with mobile keyboard */
+.ios-keyboard-open .terminal-container {
+    height: 50vh !important;
+}
+
+/* Improve tap targets for commands */
+.command, .directory {
+    cursor: pointer;
+    position: relative;
+}
+
+.command:active, .directory:active {
+    opacity: 0.7;
+}
+
+/* Add visual feedback for taps */
+a:active, .command:active, .directory:active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
 }
 
