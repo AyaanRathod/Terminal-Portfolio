@@ -131,11 +131,15 @@ const term = $('.terminal-wrap').terminal(typeof commands !== 'undefined' ? comm
     },
     prompt,
     mobileMode: isMobile, // Enable/disable mobile specific behavior
-    scrollOnEcho: true, // Try enabling default scroll on echo
     historySize: 40,
-    // Hook after command execution to ensure scroll
+    // Hook after command execution to ensure scroll and focus
     onAfterExec: function() {
-        this.scroll_to_bottom();
+        // Use window scroll after a short delay to ensure DOM update and keyboard adjustment
+        setTimeout(() => {
+            window.scrollTo(0, document.body.scrollHeight);
+            // Force focus back to the terminal input
+            this.focus(true);
+        }, 100); // Delay might need adjustment (50-150ms)
     },
     // Adjust focus behavior slightly
     focus: true // Keep focus on load/interaction
@@ -148,14 +152,14 @@ term.pause();
 term.on('click', '.command', function() {
     const command = $(this).text();
     term.exec(command, true); // Execute silently if needed, or just term.exec(command)
-    // No need to manually scroll here if onAfterExec works
+    // Scrolling handled by onAfterExec
 });
 
 term.on('click', '.directory', function() {
     const dir = $(this).text();
     term.exec(`cd ${dir}`, true);
+    // Scrolling handled by onAfterExec
 });
-
 
 // Handle window resizing
 window.addEventListener('resize', function() {
@@ -171,13 +175,17 @@ window.addEventListener('resize', function() {
     term.resize(); // Notify terminal about resize
 });
 
-// Handle touch events for focus (keep this)
+// Handle touch events for focus and scroll (keep this)
 if ('ontouchstart' in window) {
     document.addEventListener('touchstart', function(e) {
-        // Only focus if the touch is not on an interactive element like a link
-        if (!$(e.target).closest('a, .command, .directory').length) {
+        // Only focus if the touch is not on an interactive element like a link or button
+        if (!$(e.target).closest('a, .command, .directory, input, button').length) {
              // Small delay might help prevent interfering with scrolling/tapping links
-             setTimeout(() => term.focus(), 50);
+             setTimeout(() => {
+                 term.focus(true); // Force focus
+                 // Also try scrolling to bottom on touch, might help keep input in view
+                 window.scrollTo(0, document.body.scrollHeight);
+             }, 100); // Delay might need adjustment
         }
-    });
+    }, { passive: true }); // Use passive listener if not preventing default
 }
