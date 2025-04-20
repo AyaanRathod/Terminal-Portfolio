@@ -28,11 +28,14 @@
     <script src="https://cdn.jsdelivr.net/npm/isomorphic-lolcat"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery.terminal/js/xml_formatting.js"></script>
     
-    <!-- Simplified keyboard detection script -->
+    <!-- Improved keyboard detection script -->
     <script>
-    // Simple prevention of double-tap zoom on mobile
+    // Selective prevention of events - only prevent default on specific elements
     document.addEventListener('touchend', function(e) {
-        if (e.target.tagName !== 'INPUT') {
+        // Don't prevent default for inputs, but do for buttons to avoid double-tap
+        if (e.target.classList.contains('terminal-button') || 
+            e.target.classList.contains('command') || 
+            e.target.classList.contains('directory')) {
             e.preventDefault();
         }
     }, { passive: false });

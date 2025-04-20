@@ -11,9 +11,10 @@
             padding: 0;
             height: 100%;
             background-color: #0c0c0c;
+            color: white;
         }
         .test-terminal {
-            height: 100%;
+            height: 90%;
             width: 100%;
         }
         .debug {
@@ -22,13 +23,32 @@
             left: 0;
             background: rgba(0,0,0,0.7);
             color: white;
-            padding: 5px;
-            font-size: 10px;
+            padding: 10px;
+            font-size: 14px;
+            width: 100%;
             z-index: 1000;
+            overflow: auto;
+            max-height: 30%;
+        }
+        .buttons {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+        button {
+            padding: 8px;
+            margin: 2px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
         }
     </style>
 </head>
 <body>
+    <div class="buttons">
+        <button id="clearDebug">Clear Debug</button>
+    </div>
     <div id="debug" class="debug">Debug: Ready</div>
     <div class="test-terminal"></div>
 
@@ -36,33 +56,71 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery.terminal/js/jquery.terminal.min.js"></script>
     <script>
         const debug = document.getElementById('debug');
+        const logHistory = [];
+        
         function log(msg) {
-            debug.innerHTML = 'Debug: ' + msg;
+            logHistory.push(msg);
+            if (logHistory.length > 20) logHistory.shift();
+            debug.innerHTML = logHistory.join('<br>');
+            debug.scrollTop = debug.scrollHeight;
         }
+        
+        document.getElementById('clearDebug').addEventListener('click', function() {
+            logHistory.length = 0;
+            debug.innerHTML = 'Debug cleared';
+        });
+        
+        // Custom enter key handler to test
+        const isMobile = 'ontouchstart' in window;
         
         const term = $('.test-terminal').terminal(function(command) {
             if (command) {
-                this.echo("You typed: " + command);
-                log('Executed: ' + command);
+                this.echo("Command executed: " + command);
+                log('Command executed: ' + command);
             }
         }, {
-            greetings: "Simple Terminal Test",
+            greetings: "Mobile Enter Key Test Terminal",
             prompt: "test$ ",
             mobileMode: true,
-            mobileKeys: true,
-            scrollOnEcho: true,
-            historySize: 10
+            keymap: {
+                ENTER: function(e, original) {
+                    log('ENTER keymap called');
+                    if (isMobile) {
+                        e.preventDefault();
+                        const command = this.get_command();
+                        if (command) {
+                            log('Processing command: ' + command);
+                            this.set_command('');
+                            this.exec(command);
+                        }
+                        return false;
+                    } else {
+                        return original(e);
+                    }
+                }
+            }
         });
         
-        // Log events to help debug
+        // Log key events
+        term.on('keydown', function(e) {
+            log('Keydown: ' + e.key);
+        });
+        
         term.on('keypress', function(e) {
             log('Keypress: ' + e.key);
         });
         
-        term.on('keydown', function(e) {
-            if (e.key === 'Enter') {
-                log('Enter pressed');
-            }
+        term.on('keyup', function(e) {
+            log('Keyup: ' + e.key);
+        });
+        
+        // Log command events
+        term.on('cmd', function(command) {
+            log('Command event: ' + command);
+        });
+        
+        term.on('exec', function(command) {
+            log('Exec event: ' + command);
         });
     </script>
 </body>

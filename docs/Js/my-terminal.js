@@ -290,13 +290,27 @@ const term = $('.terminal-wrap').terminal(commands, {
         return Object.keys(commands);
     },
     prompt,
-    // Correct mobile settings
-    mobileIngoreAutoSpace: false, // Use default behavior
-    mobileMode: true,            // Always enable mobile mode for better touch support
-    scrollOnEcho: true,          // Better scrolling behavior
-    mobileKeys: true,            // Better keyboard handling on mobile
+    // Refined mobile settings
+    mobileMode: true,
+    scrollOnEcho: true,
     historySize: 40,
-    historyPersistence: true     // Save command history
+    historyPersistence: true,
+    // Fix the enter key issue
+    keymap: {
+        ENTER: function(e, original) {
+            if (isMobile) {
+                e.preventDefault();
+                const command = this.get_command();
+                if (command) {
+                    this.set_command('');
+                    this.exec(command);
+                }
+                return false;
+            } else {
+                return original(e);
+            }
+        }
+    }
 });
 
 term.pause();
@@ -320,33 +334,44 @@ window.addEventListener('resize', function() {
     }
 });
 
-// Handle touch events on clickable elements only
+// Fix for touch events and command input
 if ('ontouchstart' in window) {
-    // Make commands and directories clickable without double-prompts
+    // Remove any duplicate handlers
+    $(document).off('touchend', '.command, .directory');
+    
+    // Only handle clicks on commands and directories
     $(document).on('touchend', '.command, .directory', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         const command = $(this).text();
         term.set_command(command);
-        // Use setTimeout to avoid double-execution
-        setTimeout(() => {
-            term.exec();
-        }, 50);
+        term.exec();
+    });
+    
+    // Prevent the double-enter issue by intercepting the event
+    term.on('keydown', function(e) {
+        if (e.key === 'Enter' && isMobile) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
     });
 }
 
-// Simplify the auto-scroll function
-function ensureVisibleOutput() {
-    setTimeout(() => {
-        term.scroll_to_bottom();
-    }, 100);
-}
-
-// We'll retain only the essential command enhancement
+// Remove the previous command enhancement which might be causing issues
 for (const cmd in commands) {
     const originalFunction = commands[cmd];
     commands[cmd] = function(...args) {
-        const result = originalFunction.apply(this, args);
-        ensureVisibleOutput();
-        return result;
+        return originalFunction.apply(this, args);
     };
 }
+
+// Add a simple utility function to ensure output is visible
+function scrollToBottom() {
+    term.scroll_to_bottom();
+}
+
+// Add a simple command executed event handler
+term.on('cmd', function() {
+    setTimeout(scrollToBottom, 100);
+});
